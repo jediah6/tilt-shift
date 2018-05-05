@@ -65,11 +65,13 @@ Game.prototype = {
 
         
         // vertical movement
+        /*
         if (this.w.isDown)    {
             beam.body.moveUp(300)
         } else if (this.s.isDown) {
             beam.body.moveDown(300);
         }
+        */
      
         // horizontal movement
         if (this.a.isDown) {
@@ -80,10 +82,20 @@ Game.prototype = {
         
         
         // rotational movement
+        var currentAngle = beam.body.rotation % Math.PI;
+        
+        var p1 = new Phaser.Point(beam.centerX, beam.centerY);
+        var p2 = new Phaser.Point(game.input.mousePointer.x, game.input.mousePointer.y);
+        
+        var angle = p1.x < p2.x ? p1.angle(p2, false) : p2.angle(p1, false);
+        var dt = angle - currentAngle;
+        beam.body.rotateRight(dt * 30);
+        /*
         if (this.cursors.left.isDown) {
             beam.body.rotateLeft(10);
         } else if (this.cursors.right.isDown) {
             beam.body.rotateRight(10);
         }
+        */
 	}
 }
