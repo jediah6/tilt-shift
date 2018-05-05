@@ -14,70 +14,107 @@ function preload() {
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     game.scale.refresh();
     game.load.image('beam', 'assets/beam.png');
-    game.load.image('ball', 'assets/ball.jpg');
+    game.load.image('ball', 'assets/ball.png');
+    game.load.image('background', 'assets/background.png');
 
 }
 
-var player;
-var platforms;
-var cursors;
 var beam;
 var ball;
+var cursors;
 
 function create() {
+    game.add.tileSprite(0, 0, 1920, 1920);
+    game.world.setBounds(0, 0, 1920, 1920);
 
-    //  We're going to be using physics, so enable the Arcade Physics system
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.physics.startSystem(Phaser.Physics.P2JS);
+    // game.physics.p2.gravity.y = 100;
 
     // beam creation
-    beam = game.add.sprite(0, 0, 'beam');
+    beam = game.add.sprite(game.world.centerX, game.world.centerY, 'beam');
+    beam.scale.setTo(3, 3);
     beam.anchor.setTo(0.5);
-    beam.x = game.world.centerX;
-    beam.y = game.world.centerY;
 
-    game.physics.arcade.enable(beam);
-    beam.body.collideWorldBounds = true;
+    game.physics.p2.enable(beam);
 
-    // ball creation
-    ball = game.add.sprite(5, 5, 'ball');
-    game.physics.arcade.enable(ball);
-    ball.body.collideWorldBounds = true;
-    ball.body.gravity.y = 10;
-
-    //  We need to enable physics on the player
-    // game.physics.arcade.enable(player);
-
-    //  Player physics properties. Give the little guy a slight bounce.
+    // ball creation 
     /*
-    player.body.bounce.y = 0.2;
-    player.body.gravity.y = 300;
-    player.body.collideWorldBounds = true;
+    ball = game.add.sprite(game.world.centerX, game.world.centerY + 200, 'ball');
+    ball.anchor.set(0.5);
+    game.physics.p2.enable(ball);
 
-    //  Our two animations, walking left and right.
-    player.animations.add('left', [0, 1, 2, 3], 10, true);
-    player.animations.add('right', [5, 6, 7, 8], 10, true);
+    ball.body.setCircle(50);
+    ball.body.collideWorldBounds = true;
+    ball.body.data.gravityScale = 1;
     */
 
-    cursors = game.input.keyboard.createCursorKeys();
+    // game.camera.setSize(window.screen.width, window.screen.height);
+    // game.camera.follow(ball);
 
+    cursors = game.input.keyboard.createCursorKeys();
 }
+
 
 function update() {
 
     // collision
     // var hitPlatform = game.physics.arcade.collide(player, platforms);
 
+    // var bleam = game.physics.arcade.collide(beam, ball);
+
+    // move the beam
+
+    if (game.input.mousePointer.active) {
+        moveBeam(game.input.mousePointer.worldX, game.input.mousePointer.worldY);
+    }
+
+    if (cursors.left.isDown) {
+        beam.body.rotateLeft(30);
+    } else if (cursors.right.isDown) {
+        beam.body.rotateRight(30);
+    }
+
     if (game.input.pointer1.isDown && game.input.pointer2.isDown) {
-        beam.y = (game.input.pointer1.y + game.input.pointer2.y) / 2
-        beam.rotation = game.physics.arcade.angleToPointer(beam, game.input.pointer1);
+        var x = (game.input.pointer1.worldX + game.input.pointer2.worldX) / 2;
+        var y = (game.input.pointer1.worldY + game.input.pointer2.worldY) / 2;
+        moveBeam(x, y);
+        rotateBeam();
+    } else {
+        beam.body.setZeroVelocity();
+        beam.body.setZeroRotation();
     }
 
 }
 
-function render() {
+function moveBeam(x, y) {
+    
 
-    game.debug.pointer(game.input.pointer1);
-    game.debug.pointer(game.input.pointer2); 
+    var dx = x - beam.x;
+    var dy = y - beam.y;
+
+    beam.body.moveRight(dx * 10);
+    beam.body.moveDown(dy * 10);
+}
+
+var angle;
+
+function rotateBeam() {
+    var currentAngle = beam.body.rotation % Math.PI;
+
+    var p1 = new Phaser.Point(game.input.pointer1.x, game.input.pointer1.y);
+    var p2 = new Phaser.Point(game.input.pointer2.x, game.input.pointer2.y);
+
+    angle = p1.x < p2.x ? p1.angle(p2, false) : p2.angle(p1, false);    
+
+
+    var dt = angle - currentAngle;
+
+
+    beam.body.rotateRight(dt * 30);
+}
+
+function render() {
+    
 
     var x = 32;
     var y = 0;
@@ -113,4 +150,8 @@ function render() {
     game.debug.text('window.screen.availWidth: ' + window.screen.availWidth, x, y += yi);
     game.debug.text('window.screen.height: ' + window.screen.height, x, y += yi);
     game.debug.text('window.screen.availHeight: ' + window.screen.availHeight, x, y += yi);
+
+    game.debug.text('beam angle: ' + beam.body.rotation, x, y += yi);
+    game.debug.text('pointer angle: ' + angle, x, y += yi);
+
 }

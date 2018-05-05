@@ -1,0 +1,13 @@
+{
+    "level": {
+        "number": 1,
+        "width": 1000,
+        "height": 1000,
+        "background": "assets/background.png"
+    },
+
+    "beam": {
+        "image": "assets/beam.png"
+    },
+
+}
