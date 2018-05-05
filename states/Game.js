@@ -99,7 +99,7 @@ Game.prototype = {
             beam.body.rotateRight(10);
         }
         */
-	}
+	},
 	
 	render : function() {
 	        var x = 32;
